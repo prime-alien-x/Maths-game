@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Quest</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg,#6a11cb,#2575fc);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+}
+
+.game {
+    width: 100%;
+    max-width: 700px;
+    background: rgba(255,255,255,.96);
+    border-radius: 25px;
+    padding: 20px;
+    box-shadow: 0 15px 40px rgba(0,0,0,.3);
+}
+
+h1 {
+    text-align: center;
+    color: #5b21b6;
+    font-size: 38px;
+    margin-bottom: 15px;
+}
+
+.subtitle {
+    text-align:center;
+    color:#555;
+    margin-bottom:20px;
+}
+
+.stats {
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-bottom:20px;
+}
+
+.stat {
+    padding:12px;
+    border-radius:15px;
+    text-align:center;
+    font-weight:bold;
+    color:white;
+}
+
+.score {background:#10b981;}
+.lives {background:#ef4444;}
+.timer {background:#f59e0b;}
+
+.menu {
+    text-align:center;
+}
+
+.menu h2 {
+    margin-bottom:15px;
+    color:#333;
+}
+
+.difficulty {
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+}
+
+.diff {
+    border:none;
+    padding:20px 10px;
+    border-radius:18px;
+    color:white;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.diff:hover {
+    transform:translateY(-5px) scale(1.03);
+}
+
+.easy {background:#22c55e;}
+.medium {background:#eab308;}
+.hard {background:#ef4444;}
+
+.game-area {
+    display:none;
+}
+
+.progress {
+    height:14px;
+    background:#ddd;
+    border-radius:20px;
+    overflow:hidden;
+    margin-bottom:20px;
+}
+
+.progress-bar {
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#ff00cc,#3333ff);
+    transition:.3s;
+}
+
+.question {
+    background:linear-gradient(135deg,#fdf2f8,#eff6ff);
+    border-radius:20px;
+    padding:30px 15px;
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.question-type {
+    color:#7c3aed;
+    font-weight:bold;
+    margin-bottom:15px;
+}
+
+.question-text {
+    font-size:36px;
+    font-weight:bold;
+    color:#111827;
+}
+
+.answer-area {
+    display:grid;
+    gap:12px;
+}
+
+.answer {
+    border:none;
+    padding:16px;
+    border-radius:15px;
+    background:#e0e7ff;
+    color:#312e81;
+    font-size:20px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.answer:hover {
+    background:#c7d2fe;
+    transform:scale(1.02);
+}
+
+.answer.correct {
+    background:#22c55e !important;
+    color:white;
+}
+
+.answer.wrong {
+    background:#ef4444 !important;
+    color:white;
+}
+
+.message {
+    min-height:35px;
+    text-align:center;
+    font-weight:bold;
+    font-size:18px;
+    margin-top:15px;
+}
+
+.next {
+    display:none;
+    width:100%;
+    border:none;
+    padding:15px;
+    border-radius:15px;
+    background:#7c3aed;
+    color:white;
+    font-size:19px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+.back {
+    border:none;
+    background:#64748b;
+    color:white;
+    padding:10px 18px;
+    border-radius:12px;
+    cursor:pointer;
+    margin-top:15px;
+}
+
+.result {
+    display:none;
+    text-align:center;
+}
+
+.result h2 {
+    font-size:35px;
+    color:#7c3aed;
+    margin-bottom:15px;
+}
+
+.final-score {
+    font-size:45px;
+    font-weight:bold;
+    color:#f59e0b;
+    margin:20px;
+}
+
+.restart {
+    border:none;
+    padding:16px 30px;
+    border-radius:15px;
+    background:linear-gradient(90deg,#ec4899,#8b5cf6);
+    color:white;
+    font-size:20px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.badge {
+    display:inline-block;
+    padding:8px 15px;
+    border-radius:20px;
+    background:#ddd6fe;
+    color:#5b21b6;
+    font-weight:bold;
+    margin-bottom:15px;
+}
+
+@media(max-width:500px) {
+    h1 {
+        font-size:30px;
+    }
+
+    .question-text {
+        font-size:28px;
+    }
+
+    .difficulty {
+        grid-template-columns:1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+
+<h1>🧠 Math Quest</h1>
+<p class="subtitle">Solve puzzles, earn points and become a Math Master!</p>
+
+<div class="stats">
+    <div class="stat score">
+        ⭐ Score<br>
+        <span id="score">0</span>
+    </div>
+
+    <div class="stat lives">
+        ❤️ Lives<br>
+        <span id="lives">3</span>
+    </div>
+
+    <div class="stat timer">
+        ⏱️ Time<br>
+        <span id="timer">30</span>
+    </div>
+</div>
+
+<!-- MENU -->
+
+<div class="menu" id="menu">
+
+    <h2>Choose Difficulty</h2>
+
+    <div class="difficulty">
+
+        <button class="diff easy" onclick="startGame('easy')">
+            🟢 EASY<br>
+            <small>Fun Starter</small>
+        </button>
+
+        <button class="diff medium" onclick="startGame('medium')">
+            🟡 MEDIUM<br>
+            <small>Think Fast</small>
+        </button>
+
+        <button class="diff hard" onclick="startGame('hard')">
+            🔴 HARD<br>
+            <small>Math Master</small>
+        </button>
+
+    </div>
+
+</div>
+
+<!-- GAME -->
+
+<div class="game-area" id="gameArea">
+
+    <div class="badge" id="difficultyText">EASY</div>
+
+    <div class="progress">
+        <div class="progress-bar" id="progress"></div>
+    </div>
+
+    <div class="question">
+
+        <div class="question-type" id="questionType">
+            Puzzle
+        </div>
+
+        <div class="question-text" id="question">
+            2 + 2 = ?
+        </div>
+
+    </div>
+
+    <div class="answer-area" id="answers"></div>
+
+    <div class="message" id="message"></div>
+
+    <button class="next" id="next" onclick="nextQuestion()">
+        ➡️ Next Puzzle
+    </button>
+
+    <br>
+
+    <button class="back" onclick="backToMenu()">
+        ⬅️ Menu
+    </button>
+
+</div>
+
+<!-- RESULT -->
+
+<div class="result" id="result">
+
+    <h2>🏆 Game Complete!</h2>
+
+    <p>You finished the challenge!</p>
+
+    <div class="final-score">
+        ⭐ <span id="finalScore">0</span>
+    </div>
+
+    <p id="resultMessage"></p>
+
+    <br>
+
+    <button class="restart" onclick="backToMenu()">
+        🔄 Play Again
+    </button>
+
+</div>
+
+</div>
+
+<script>
+
+let difficulty = "easy";
+let score = 0;
+let lives = 3;
+let questionNumber = 0;
+let totalQuestions = 10;
+let correctAnswer = 0;
+let timer = 30;
+let timerInterval;
+let answered = false;
+
+/* ---------------- RANDOM NUMBER ---------------- */
+
+function random(min,max) {
+    return Math.floor(Math.random() * (max-min+1)) + min;
+}
+
+/* ---------------- START GAME ---------------- */
+
+function startGame(level) {
+
+    difficulty = level;
+
+    score = 0;
+    lives = 3;
+    questionNumber = 0;
+
+    document.getElementById("score").textContent = score;
+    document.getElementById("lives").textContent = lives;
+
+    document.getElementById("menu").style.display = "none";
+    document.getElementById("result").style.display = "none";
+    document.getElementById("gameArea").style.display = "block";
+
+    document.getElementById("difficultyText").textContent =
+        level.toUpperCase();
+
+    nextQuestion();
+}
+
+/* ---------------- QUESTION GENERATOR ---------------- */
+
+function generateQuestion() {
+
+    let type;
+    let question;
+    let answer;
+
+    if (difficulty === "easy") {
+
+        type = random(1,4);
+
+        if(type === 1) {
+
+            let a = random(1,20);
+            let b = random(1,20);
+
+            question = `${a} + ${b} = ?`;
+            answer = a+b;
+
+        } else if(type === 2) {
+
+            let a = random(10,30);
+            let b = random(1,a);
+
+            question = `${a} − ${b} = ?`;
+            answer = a-b;
+
+        } else if(type === 3) {
+
+            let a = random(1,10);
+            let b = random(1,10);
+
+            question = `${a} × ${b} = ?`;
+            answer = a*b;
+
+        } else {
+
+            let b = random(1,10);
+            let answerTemp = random(1,10);
+            let a = b * answerTemp;
+
+            question = `${a} ÷ ${b} = ?`;
+            answer = answerTemp;
+        }
+
+    }
+
+    else if (difficulty === "medium") {
+
+        type = random(1,4);
+
+        if(type === 1) {
+
+            let a = random(10,50);
+            let b = random(10,50);
+
+            question = `${a} + ${b} = ?`;
+            answer = a+b;
+
+        } else if(type === 2) {
+
+            let a = random(30,100);
+            let b = random(10,30);
+
+            question = `${a} − ${b} = ?`;
+            answer = a-b;
+
+        } else if(type === 3) {
+
+            let a = random(5,20);
+            let b = random(2,12);
+
+            question = `${a} × ${b} = ?`;
+            answer = a*b;
+
+        } else {
+
+            let b = random(2,12);
+            let result = random(2,15);
+            let a = b*result;
+
+            question = `${a} ÷ ${b} = ?`;
+            answer = result;
+        }
+
+    }
+
+    else {
+
+        type = random(1,5);
+
+        if(type === 1) {
+
+            let a = random(10,40);
+            let b = random(5,20);
+            let c = random(2,10);
+
+            question = `${a} + ${b} × ${c} = ?`;
+            answer = a + b*c;
+
+        }
+
+        else if(type === 2) {
+
+            let x = random(2,12);
+
+            question = `If x + ${random(5,20)} = ${x+random(5,20)}, find x`;
+
+            /* Correct simple replacement */
+            let n = random(5,20);
+            question = `If x + ${n} = ${x+n}, find x`;
+            answer = x;
+
+        }
+
+        else if(type === 3) {
+
+            let a = random(2,12);
+            let b = random(2,12);
+
+            question = `${a}² + ${b}² = ?`;
+            answer = a*a + b*b;
+
+        }
+
+        else if(type === 4) {
+
+            let a = random(2,10);
+            let b = random(2,10);
+
+            question = `(${a} + ${b}) × ${random(2,6)} = ?`;
+
+            let multiplier = parseInt(question.match(/× (\d+)/)[1]);
+
+            answer = (a+b)*multiplier;
+
+        }
+
+        else {
+
+            let n = random(2,12);
+
+            question = `What is ${n} × ${n} − ${n} ?`;
+            answer = n*n-n;
+        }
+    }
+
+    return {
+        question,
+        answer
+    };
+}
+
+/* ---------------- NEXT QUESTION ---------------- */
+
+function nextQuestion() {
+
+    if(questionNumber >= totalQuestions || lives <= 0) {
+        endGame();
+        return;
+    }
+
+    questionNumber++;
+    answered = false;
+
+    document.getElementById("next").style.display = "none";
+    document.getElementById("message").textContent = "";
+
+    let q = generateQuestion();
+
+    correctAnswer = q.answer;
+
+    document.getElementById("question").textContent = q.question;
+
+    document.getElementById("questionType").textContent =
+        getPuzzleType();
+
+    updateProgress();
+
+    createAnswers();
+
+    startTimer();
+}
+
+/* ---------------- PUZZLE TYPE ---------------- */
+
+function getPuzzleType() {
+
+    let types = [
+        "🔢 Number Puzzle",
+        "➕ Calculation",
+        "🧩 Brain Puzzle",
+        "⚡ Quick Math",
+        "🧠 Logic Challenge"
+    ];
+
+    return types[random(0,types.length-1)];
+}
+
+/* ---------------- ANSWERS ---------------- */
+
+function createAnswers() {
+
+    let answers = [correctAnswer];
+
+    while(answers.length < 4) {
+
+        let variation = random(-10,10);
+
+        let wrong = correctAnswer + variation;
+
+        if(wrong < 0) wrong = Math.abs(wrong);
+
+        if(!answers.includes(wrong)) {
+            answers.push(wrong);
+        }
+    }
+
+    answers.sort(() => Math.random()-.5);
+
+    let container = document.getElementById("answers");
+
+    container.innerHTML = "";
+
+    answers.forEach(value => {
+
+        let button = document.createElement("button");
+
+        button.className = "answer";
+        button.textContent = value;
+
+        button.onclick = () => checkAnswer(button,value);
+
+        container.appendChild(button);
+    });
+}
+
+/* ---------------- CHECK ANSWER ---------------- */
+
+function checkAnswer(button,value) {
+
+    if(answered) return;
+
+    answered = true;
+
+    clearInterval(timerInterval);
+
+    let buttons = document.querySelectorAll(".answer");
+
+    buttons.forEach(btn => btn.disabled = true);
+
+    if(value === correctAnswer) {
+
+        button.classList.add("correct");
+
+        let points =
+            difficulty === "easy" ? 10 :
+            difficulty === "medium" ? 20 : 30;
+
+        score += points;
+
+        document.getElementById("score").textContent = score;
+
+        document.getElementById("message").textContent =
+            `🎉 Correct! +${points} points`;
+
+    } else {
+
+        button.classList.add("wrong");
+
+        lives--;
+
+        document.getElementById("lives").textContent = lives;
+
+        document.getElementById("message").textContent =
+            `❌ Wrong! Correct answer: ${correctAnswer}`;
+
+        buttons.forEach(btn => {
+
+            if(Number(btn.textContent) === correctAnswer) {
+                btn.classList.add("correct");
+            }
+
+        });
+    }
+
+    document.getElementById("next").style.display = "block";
+}
+
+/* ---------------- TIMER ---------------- */
+
+function startTimer() {
+
+    clearInterval(timerInterval);
+
+    timer =
+        difficulty === "easy" ? 30 :
+        difficulty === "medium" ? 20 : 12;
+
+    document.getElementById("timer").textContent = timer;
+
+    timerInterval = setInterval(() => {
+
+        timer--;
+
+        document.getElementById("timer").textContent = timer;
+
+        if(timer <= 0) {
+
+            clearInterval(timerInterval);
+
+            if(!answered) {
+
+                answered = true;
+
+                lives--;
+
+                document.getElementById("lives").textContent = lives;
+
+                document.getElementById("message").textContent =
+                    `⏰ Time's up! Answer: ${correctAnswer}`;
+
+                document.querySelectorAll(".answer")
+                    .forEach(btn => {
+
+                        btn.disabled = true;
+
+                        if(Number(btn.textContent) === correctAnswer) {
+                            btn.classList.add("correct");
+                        }
+
+                    });
+
+                document.getElementById("next").style.display = "block";
+            }
+        }
+
+    },1000);
+}
+
+/* ---------------- PROGRESS ---------------- */
+
+function updateProgress() {
+
+    let percent =
+        ((questionNumber-1)/totalQuestions)*100;
+
+    document.getElementById("progress").style.width =
+        percent + "%";
+}
+
+/* ---------------- END GAME ---------------- */
+
+function endGame() {
+
+    clearInterval(timerInterval);
+
+    document.getElementById("gameArea").style.display = "none";
+    document.getElementById("result").style.display = "block";
+
+    document.getElementById("finalScore").textContent = score;
+
+    let message;
+
+    if(score >= 250)
+        message = "🏆 AMAZING! You are a Math Master!";
+    else if(score >= 150)
+        message = "🔥 Great job! Your maths skills are strong!";
+    else if(score >= 80)
+        message = "👍 Good work! Keep practicing!";
+    else
+        message = "💪 Keep trying! You will get better!";
+
+    document.getElementById("resultMessage").textContent = message;
+}
+
+/* ---------------- MENU ---------------- */
+
+function backToMenu() {
+
+    clearInterval(timerInterval);
+
+    document.getElementById("gameArea").style.display = "none";
+    document.getElementById("result").style.display = "none";
+    document.getElementById("menu").style.display = "block";
+}
+
+</script>
+
+</body>
+</html>
